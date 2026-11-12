@@ -38,7 +38,7 @@ const A=[
 ['r50','Road Warrior','Play 50 runs',50,40,()=>D.st.runs],
 ['s3','Collector','Own 3 skins',3,20,()=>D.owned.length],
 ['all','All Skins Unlocked','Own every skin',SK.length,200,()=>D.owned.length]];
-let scr='menu',confirmReset=false,ap=0,nextMs=100;
+let scr='menu',confirmReset=false,ap=0,nextMs=100,curBg='';
 const claimable=()=>A.filter(a=>!D.claimed.includes(a[0])&&a[5]()>=a[3]).length;
 function txtL(t,x,y,px,b,c){g.textAlign='left';txt(t,x,y,px,b,c);g.textAlign='center'}
 function back(){btn('←',34,SAT+62,46,42,'#2b2f3d',()=>{scr='menu';confirmReset=false},'#fff')}
@@ -121,7 +121,7 @@ g.restore()}
 rr(x+w*.15,y+h*.25,w*.7,h*.2,4,'#cfe8ff');rr(x+w*.15,y+h*.62,w*.7,h*.12,3,'rgba(0,0,0,.35)')}
 function coin(x,y,r){g.fillStyle='#f5c542';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.strokeStyle='#b8860b';g.lineWidth=2;g.beginPath();g.arc(x,y,r*.62,0,7);g.stroke()}
 function txt(s,x,y,px,b,c){g.font=F(px,b);g.fillStyle=c||'#fff';g.fillText(s,x,y)}
-function draw(){g.textAlign='center';g.fillStyle='#1d3a2a';g.fillRect(0,0,W,H);
+function draw(){const bg=state==='play'?'#2b2f3d':'#101218';if(bg!==curBg){curBg=bg;document.documentElement.style.background=bg;document.body.style.background=bg}g.textAlign='center';g.fillStyle='#1d3a2a';g.fillRect(0,0,W,H);
 g.fillStyle='#2b2f3d';g.fillRect(RX,0,RW,H);
 g.fillStyle='#e8e8ee';g.fillRect(RX,0,4,H);g.fillRect(RX+RW-4,0,4,H);
 for(let i=1;i<4;i++){g.fillStyle=i==2?'#f5c542':'rgba(255,255,255,.5)';for(let y=-H*.1+off;y<H;y+=H*.1)g.fillRect(RX+i*LW-2,y,4,H*.05)}
@@ -142,8 +142,8 @@ txt(over?score+' m  ·  '+(newBest?'NEW BEST!':'Best '+D.best+' m')+'  ·  +'+cr
 coin(W/2-42,H*.25,8);txt(D.coins+' coins',W/2+10,H*.255,16,1,'#f5c542');
 const ow=D.owned.includes(view),cost=SK[view][2];
 g.globalAlpha=ow?1:.45;car(W/2,H*.33,56,view);g.globalAlpha=1;
-btn('◀',W/2-115,H*.43,52,46,'#2b2f3d',()=>{view=(view+SK.length-1)%SK.length},'#fff');
-btn('▶',W/2+115,H*.43,52,46,'#2b2f3d',()=>{view=(view+1)%SK.length},'#fff');
+btn('◀',W/2-100,H*.33,52,46,'#2b2f3d',()=>{view=(view+SK.length-1)%SK.length},'#fff');
+btn('▶',W/2+100,H*.33,52,46,'#2b2f3d',()=>{view=(view+1)%SK.length},'#fff');
 txt(SK[view][0],W/2,H*.43+7,20,1);
 if(!ow)btn('Buy · '+cost+' coins',W/2,H*.485,210,44,D.coins>=cost?'#1f9d55':'#4a4f63',()=>{if(D.coins>=cost){D.coins-=cost;D.owned.push(view);D.skin=view;save();sfx('buy')}else{msg='Need '+(cost-D.coins)+' more coins';msgUntil=performance.now()+2000}},'#fff');
 else if(view===D.skin)btn('Equipped ✓',W/2,H*.485,210,44,'#2b2f3d',()=>{},'#7ee787');
