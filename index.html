@@ -10,26 +10,63 @@
 <title>Dodge</title>
 <style>
 html,body{margin:0;height:100%;background:#14161f;overflow:hidden;touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-canvas{display:block;width:100%;height:100%}
-</style></head><body><canvas id="c"></canvas><script>
+canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100lvh}
+#sat{position:fixed;top:0;left:0;visibility:hidden;padding-top:env(safe-area-inset-top)}
+</style></head><body><div id="sat"></div><canvas id="c"></canvas><script>
 const cv=document.getElementById('c'),g=cv.getContext('2d');
 const SK=[['Classic','#e5484d',0],['Ocean','#3b82f6',25],['Sun','#f5c542',50],['Mint','#2fbf71',100],['Violet','#8b5cf6',200],['Rally','#1e3a8a',150,'stripes','#ffffff'],['Inferno','#1a1a1f',250,'flames','#ff7a18'],['Checker','#f2f2f2',300,'checker','#111111'],['Galaxy','#2a1458',400,'stars','#ffe9a8'],['Tiger','#ff8a1f',500,'tiger','#1a1a1f']];
 const today=()=>new Date().toLocaleDateString('en-CA');
-let D={best:0,coins:0,skin:0,owned:[0],day:today(),list:[]};
+let D={best:0,coins:0,skin:0,owned:[0],day:today(),list:[],claimed:[],st:{runs:0,coins:0,near:0},sound:true};
 try{const s=JSON.parse(localStorage.getItem('dodge2'));if(s)D=Object.assign(D,s);D.best=Math.max(D.best,+localStorage.getItem('dodgeBest')||0)}catch(e){}
 if(D.day!==today()){D.day=today();D.list=[]}
 D.owned=D.owned.filter(i=>i<SK.length);if(!D.owned.includes(0))D.owned.push(0);if(D.skin>=SK.length||!D.owned.includes(D.skin))D.skin=0;
+D.claimed=D.claimed||[];D.st=Object.assign({runs:0,coins:0,near:0},D.st);
 const save=()=>{try{localStorage.setItem('dodge2',JSON.stringify(D))}catch(e){}};
+const A=[
+['first','First Ride','Finish 1 run',1,5,()=>D.st.runs],
+['m100','100 Meters','Reach 100 m in one run',100,10,()=>D.best],
+['m200','200 Meters','Reach 200 m in one run',200,20,()=>D.best],
+['m500','500 Meters','Reach 500 m in one run',500,40,()=>D.best],
+['m1000','1,000 Meters','Reach 1,000 m in one run',1000,80,()=>D.best],
+['m2000','Road Legend','Reach 2,000 m in one run',2000,150,()=>D.best],
+['c50','Pocket Change','Collect 50 coins',50,10,()=>D.st.coins],
+['c500','Coin Hoarder','Collect 500 coins',500,60,()=>D.st.coins],
+['c2000','Gold Rush','Collect 2,000 coins',2000,120,()=>D.st.coins],
+['n10','Daredevil','Make 10 close calls',10,15,()=>D.st.near],
+['n100','Edge Runner','Make 100 close calls',100,50,()=>D.st.near],
+['r10','Regular','Play 10 runs',10,10,()=>D.st.runs],
+['r50','Road Warrior','Play 50 runs',50,40,()=>D.st.runs],
+['s3','Collector','Own 3 skins',3,20,()=>D.owned.length],
+['all','All Skins Unlocked','Own every skin',SK.length,200,()=>D.owned.length]];
+let scr='menu',confirmReset=false,ap=0;
+const claimable=()=>A.filter(a=>!D.claimed.includes(a[0])&&a[5]()>=a[3]).length;
+function txtL(t,x,y,px,b,c){g.textAlign='left';txt(t,x,y,px,b,c);g.textAlign='center'}
+function back(){btn('←',34,SAT+34,46,42,'#2b2f3d',()=>{scr='menu';confirmReset=false},'#fff')}
+function resetAll(){const snd=D.sound;D={best:0,coins:0,skin:0,owned:[0],day:today(),list:[],claimed:[],st:{runs:0,coins:0,near:0},sound:snd};try{localStorage.removeItem('dodgeBest')}catch(e){}save();view=0;confirmReset=false;scr='menu'}
+function settings(){g.fillStyle='rgba(10,12,18,.92)';g.fillRect(0,H*.1,W,H*.8);back();txt('Settings',W/2,H*.17,34,1);
+btn('Sound: '+(D.sound===false?'OFF 🔇':'ON 🔊'),W/2,H*.3,240,50,'#2b2f3d',()=>{D.sound=D.sound===false;save();beep(660,.08)},'#fff');
+if(!confirmReset)btn('Reset all progress',W/2,H*.42,240,50,'#7a2326',()=>{confirmReset=true},'#fff');
+else{txt('Erase ALL coins, skins,',W/2,H*.39,16,0,'#ff8b8b');txt('scores and achievements?',W/2,H*.415,16,0,'#ff8b8b');
+btn('Yes, erase everything',W/2,H*.49,240,50,'#d92d32',resetAll,'#fff');btn('Cancel',W/2,H*.57,240,46,'#2b2f3d',()=>{confirmReset=false},'#fff')}}
+function achv(){g.fillStyle='rgba(10,12,18,.92)';g.fillRect(0,H*.1,W,H*.8);back();txt('Achievements',W/2,H*.17,30,1);
+const pw=Math.min(W-24,440),px=(W-pw)/2,rh=H*.115,per=5,pages=Math.ceil(A.length/per);
+for(let i=0;i<per;i++){const a=A[ap*per+i];if(!a)break;const y=H*.21+i*rh,v=a[5](),done=v>=a[3],cd=D.claimed.includes(a[0]),cy=y+(rh-8)/2;
+rr(px,y,pw,rh-8,10,'rgba(255,255,255,.07)');
+txtL(a[1],px+12,y+rh*.27,16,1,cd?'#7ee787':'#fff');txtL(a[2],px+12,y+rh*.5,13,0,'#aab0c4');txtL(Math.min(v,a[3]).toLocaleString()+' / '+a[3].toLocaleString(),px+12,y+rh*.7,12,0,'#7d8399');
+if(cd)btn('Claimed ✓',px+pw-60,cy,100,34,'#2b2f3d',()=>{},'#7ee787');
+else if(done)btn('Claim +'+a[4],px+pw-60,cy,100,34,'#1f9d55',()=>{D.coins+=a[4];D.claimed.push(a[0]);save();beep(880,.15)},'#fff');
+else btn('+'+a[4]+' coins',px+pw-60,cy,100,34,'#2b2f3d',()=>{},'#f5c542')}
+btn('◀',W/2-110,H*.83,52,42,'#2b2f3d',()=>{ap=(ap+pages-1)%pages},'#fff');txt((ap+1)+' / '+pages,W/2,H*.83+6,16,1);btn('▶',W/2+110,H*.83,52,42,'#2b2f3d',()=>{ap=(ap+1)%pages},'#fff')}
 const F=(p,b)=>(b?'bold ':'')+p+'px -apple-system,system-ui,sans-serif';
-let W,H,RW,RX,LW,CW,CH,carY;
+let W,H,RW,RX,LW,CW,CH,carY,SAT=0;
 let carX=null,obs=[],coins=[],fl=[],speed,dist,bonus,cr,score=0,spawn,off,state='ready',overAt=0,key=0,flash=0,newBest=false,view=D.skin;
 const cl=x=>Math.max(RX+CW/2,Math.min(RX+RW-CW/2,x));
-function resize(){const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;g.setTransform(d,0,0,d,0,0);
+function resize(){const d=Math.min(devicePixelRatio||1,2);const r=cv.getBoundingClientRect();W=r.width;H=r.height;SAT=document.getElementById('sat').offsetHeight;cv.width=W*d;cv.height=H*d;g.setTransform(d,0,0,d,0,0);
 RW=Math.min(W,520);RX=(W-RW)/2;LW=RW/4;CW=LW*.46;CH=CW*1.8;carY=H*.8;if(carX!=null)carX=cl(carX)}
-resize();addEventListener('resize',resize);
+resize();addEventListener('resize',resize);setTimeout(resize,300);
 function reset(){carX=W/2;obs=[];coins=[];fl=[];speed=H*.5;dist=0;bonus=0;cr=0;score=0;spawn=H*.3;off=0;flash=0;newBest=false}
 reset();
-let ac;function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),v=ac.createGain();o.type='square';o.frequency.value=f;v.gain.value=.06;o.connect(v);v.connect(ac.destination);o.start();v.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
+let ac;function beep(f,d){if(D.sound===false)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),v=ac.createGain();o.type='square';o.frequency.value=f;v.gain.value=.06;o.connect(v);v.connect(ac.destination);o.start();v.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}}
 function spawnRow(){const s=Math.floor(dist/H*10);const n=1+(Math.random()<Math.min(.6,s/300)?1:0)+(s>400&&Math.random()<.3?1:0);
 const L=[0,1,2,3].sort(()=>Math.random()-.5),w=LW*.78,h=w*.7;
 for(let i=0;i<n;i++)obs.push({x:RX+L[i]*LW+(LW-w)/2,y:-h,w,h,c:Math.floor(Math.random()*3),m:9e9,d:0});
@@ -41,13 +78,13 @@ const a={l:carX-CW*.4,r:carX+CW*.4,t:carY-CH*.45,b:carY+CH*.45};
 for(const o of obs){o.y+=speed*dt;
 if(o.y+o.h>a.t&&o.y<a.b)o.m=Math.min(o.m,Math.max(o.x-a.r,a.l-(o.x+o.w)));
 const m=o.w*.08;if(a.l<o.x+o.w-m&&a.r>o.x+m&&a.t<o.y+o.h-m&&a.b>o.y+m){crash();return}
-if(!o.d&&o.y>a.b){o.d=1;if(o.m>0&&o.m<CW*.55){bonus+=5;fl.push({t:'Close! +5',x:carX,y:carY-CH,l:1});beep(660,.06)}}}
-for(const c of coins){c.y+=speed*dt;if(Math.abs(c.x-carX)<CW*.7&&Math.abs(c.y-carY)<CH*.6){c.g=1;cr++;D.coins++;bonus+=2;beep(980,.05)}}
+if(!o.d&&o.y>a.b){o.d=1;if(o.m>0&&o.m<CW*.55){D.st.near++;bonus+=5;fl.push({t:'Close! +5',x:carX,y:carY-CH,l:1});beep(660,.06)}}}
+for(const c of coins){c.y+=speed*dt;if(Math.abs(c.x-carX)<CW*.7&&Math.abs(c.y-carY)<CH*.6){c.g=1;cr++;D.coins++;D.st.coins++;bonus+=2;beep(980,.05)}}
 obs=obs.filter(o=>o.y<H+50);coins=coins.filter(c=>!c.g&&c.y<H+30);
 for(const f of fl){f.y-=40*dt;f.l-=dt*1.2}fl=fl.filter(f=>f.l>0);
 score=Math.floor(dist/H*10)+bonus}
 function crash(){state='over';overAt=performance.now();flash=1;beep(120,.4);
-if(score>D.best){D.best=score;newBest=true}
+D.st.runs++;scr='menu';if(score>D.best){D.best=score;newBest=true}
 if(score>0){D.list.push(score);D.list.sort((a,b)=>b-a);D.list=D.list.slice(0,5)}
 D.day=today();save()}
 function rr(x,y,w,h,r,c){g.fillStyle=c;g.beginPath();g.roundRect(x,y,w,h,r);g.fill()}
@@ -74,12 +111,12 @@ for(const c of coins)coin(c.x,c.y,LW*.14);
 car(carX,carY,CW,D.skin);
 for(const f of fl){g.globalAlpha=Math.max(0,f.l);txt(f.t,f.x,f.y,18,1,'#ffd84d')}g.globalAlpha=1;
 if(flash>0){g.fillStyle='rgba(255,255,255,'+flash*.6+')';g.fillRect(0,0,W,H);flash=Math.max(0,flash-.05)}
-if(state==='play'){txt(score+' m',W/2,66,24,1);const ct=''+D.coins;g.font=F(20,1);const cw=g.measureText(ct).width;coin(W-16-cw-14,61,9);g.textAlign='right';txt(ct,W-16,67,20,1);g.textAlign='center'}
+if(state==='play'){txt(score+' m',W/2,SAT+44,24,1);const ct=''+D.coins;g.font=F(20,1);const cw=g.measureText(ct).width;coin(W-16-cw-14,SAT+39,9);g.textAlign='right';txt(ct,W-16,SAT+45,20,1);g.textAlign='center'}
 else menu()}
 let btns=[],msg='',msgUntil=0;
 function startGame(){if(performance.now()-overAt<400)return;view=D.skin;reset();state='play';beep(440,.08)}
 function btn(l,x,y,w,h,col,fn,tc){g.fillStyle=col;g.beginPath();g.roundRect(x-w/2,y-h/2,w,h,h/4);g.fill();txt(l,x,y+h*.14,h*.42,1,tc);btns.push({x:x-w/2,y:y-h/2,w,h,fn})}
-function menu(){btns=[];const over=state==='over';g.fillStyle='rgba(10,12,18,.86)';g.fillRect(0,H*.1,W,H*.8);
+function menu(){btns=[];if(scr==='settings')return settings();if(scr==='ach')return achv();const over=state==='over';g.fillStyle='rgba(10,12,18,.86)';g.fillRect(0,H*.1,W,H*.8);
 txt(over?'CRASHED':'DODGE',W/2,H*.17,40,1);
 txt(over?score+' m  ·  '+(newBest?'NEW BEST!':'Best '+D.best+' m')+'  ·  +'+cr+' coins':'Drag left / right to steer',W/2,H*.21,16,0,'#cfd3e0');
 coin(W/2-42,H*.25,8);txt(D.coins+' coins',W/2+10,H*.255,16,1,'#f5c542');
@@ -94,7 +131,10 @@ else btn('Equip',W/2,H*.485,210,44,'#3b82f6',()=>{D.skin=view;save()},'#fff');
 if(performance.now()<msgUntil)txt(msg,W/2,H*.535,15,1,'#ff8b8b');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff')}
+btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
+btn('⚙️',34,SAT+34,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
+btn('🏆',W-34,SAT+34,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
+if(claimable()){g.fillStyle='#ff3b30';g.beginPath();g.arc(W-34+17,SAT+34-15,7,0,7);g.fill()}}
 let last=performance.now();
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(state==='play')update(dt);draw();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
