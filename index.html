@@ -86,8 +86,8 @@ if(sh==='star')star(x,y,sz*.1);else if(sh==='heart')heart(x,y,sz*.09);else if(sh
 else if(sh==='flake'){g.lineWidth=1.5;for(let a=0;a<3;a++){const r=a*Math.PI/3;g.beginPath();g.moveTo(x-Math.cos(r)*sz*.08,y-Math.sin(r)*sz*.08);g.lineTo(x+Math.cos(r)*sz*.08,y+Math.sin(r)*sz*.08);g.stroke()}}
 else circ(x,y,sz*.08*(1+k*.1))}g.globalAlpha=1}
 let lk={tab:0,mode:0,page:0,sel:0};
-function lkList(){const L=lk.mode?TR:SK,si=lk.mode?5:7;return L.map((v,i)=>i).filter(i=>!!L[i][si]===!!lk.tab)}
-function lkSet(m,t){lk.mode=m;lk.tab=t;lk.page=0;const l=lkList(),e=m?D.trail:D.skin;lk.sel=l.includes(e)?e:l[0]}
+function lkList(){const L=lk.mode?TR:SK,si=lk.mode?5:7,ci=lk.mode?1:2;return L.map((v,i)=>i).filter(i=>!!L[i][si]===!!lk.tab).sort((a,b)=>L[a][ci]-L[b][ci]||a-b)}
+function lkSet(m,t){lk.mode=m;lk.tab=t;lk.page=0;const l=lkList(),e=m?D.trail:D.skin;lk.sel=l.includes(e)?e:l[0];lk.page=Math.max(0,Math.floor(l.indexOf(lk.sel)/9))}
 function openLocker(){TH=mkTheme();SEA=seasonNow();lkSet(0,SK[D.skin][7]?1:0);scr='locker'}
 function lkAct(){const car=!lk.mode,i=lk.sel,own=car?D.owned:D.trails,cost=car?SK[i][2]:TR[i][1],sea=car?SK[i][7]:TR[i][5];
 if(own.includes(i)){if(car)D.skin=i;else D.trail=i;save();return}
@@ -95,10 +95,10 @@ if(sea&&!SEA[sea])return;
 if(D.coins<cost){msg='Need '+(cost-D.coins)+' more coins';msgUntil=performance.now()+2000;return}
 D.coins-=cost;own.push(i);if(car)D.skin=i;else D.trail=i;save();sfx('buy')}
 function locker(){g.fillStyle='rgba(10,12,18,.95)';g.fillRect(0,0,W,H);back();txt('Locker',W/2,SAT+72,30,1);txt(D.coins+' coins',W-62,SAT+68,15,1,'#f5c542');
-const L=lk.mode?TR:SK,own=lk.mode?D.trails:D.owned,eq=lk.mode?D.trail:D.skin,si=lk.mode?5:7,T=SAT+100,gx=94,gw=W-gx-10,c=Math.min(92,(gw-16)/3),gy=T+48;
+const L=lk.mode?TR:SK,own=lk.mode?D.trails:D.owned,eq=lk.mode?D.trail:D.skin,si=lk.mode?5:7,T=SAT+100,cw=Math.min(W,440),ox=(W-cw)/2,gx=ox+94,gw=cw-104,c=Math.min(92,(gw-16)/3),gy=T+48;
 txt('Mix & match cars and trails',W/2,T-8,13,0,'#8a90a6');
 [['Cars',0],['Trails',1]].forEach(([n,m],k)=>btn(n,gx+(gw-8)/4+k*((gw-8)/2+4),T+14,(gw-8)/2,38,lk.mode===m?'#3b82f6':'#2b2f3d',()=>lkSet(m,0),'#fff',16));
-[['Standard',0],['Seasonal',1]].forEach(([n,t],k)=>btn(n,46,gy+c*.5+k*(c+8),76,c,lk.tab===t?'#3b82f6':'#2b2f3d',()=>lkSet(lk.mode,t),'#fff',14));
+[['Standard',0],['Seasonal',1]].forEach(([n,t],k)=>btn(n,ox+46,gy+c*.5+k*(c+8),76,c,lk.tab===t?'#3b82f6':'#2b2f3d',()=>lkSet(lk.mode,t),'#fff',14));
 const list=lkList(),pages=Math.max(1,Math.ceil(list.length/9));if(lk.page>=pages)lk.page=0;
 for(let n=0;n<9;n++){const i=list[lk.page*9+n];if(i==null)break;const x0=gx+(n%3)*(c+8),y0=gy+(n/3|0)*(c+8),o=own.includes(i);
 rr(x0,y0,c,c,12,lk.sel===i?'rgba(245,197,66,.18)':'rgba(255,255,255,.07)');
@@ -276,7 +276,7 @@ btn('🚗 Locker',W/2,H*.5,210,44,'#3b82f6',openLocker,'#fff');
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v14',W/2,H*.93,12,0,'#555a6e');
+txt('v15',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
@@ -284,12 +284,12 @@ if(claimable()){g.fillStyle='#ff3b30';g.beginPath();g.arc(W-34+17,SAT+62-15,7,0,
 let last=performance.now();
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(state==='play')update(dt);draw();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
-let dragging=false,lx=0;
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);dragging=true;lx=e.clientX;actx();
+let dragging=false,lx=0,sx=0,sy=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);dragging=true;lx=sx=e.clientX;sy=e.clientY;actx();
 if(state==='play')return;
 for(const b of btns)if(e.clientX>=b.x&&e.clientX<=b.x+b.w&&e.clientY>=b.y&&e.clientY<=b.y+b.h){sfx('click');b.fn();return}});
 cv.addEventListener('pointermove',e=>{if(!dragging||state!=='play')return;carX=cl(carX+(e.clientX-lx)*1.3);lx=e.clientX});
-['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>dragging=false));
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,e=>{if(dragging&&scr==='locker'&&Math.abs(e.clientX-sx)>60&&Math.abs(e.clientY-sy)<50){const pg=Math.max(1,Math.ceil(lkList().length/9));lk.page=(lk.page+(e.clientX<sx?1:pg-1))%pg}dragging=false}));
 addEventListener('keydown',e=>{if(e.key==='ArrowLeft')key=-1;else if(e.key==='ArrowRight')key=1;
 else if((e.key===' '||e.key==='Enter')&&state!=='play')startGame();});
 addEventListener('keyup',e=>{if(e.key==='ArrowLeft'&&key<0||e.key==='ArrowRight'&&key>0)key=0});
