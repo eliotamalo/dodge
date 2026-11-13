@@ -229,7 +229,7 @@ g.globalAlpha=1}
 function usePw(t){if(t==='s'&&hs&&ts<=0){hs=false;ts=5;sfx('star')}else if(t==='b'&&hb&&tb<=0){hb=false;tb=5;sfx('boost')}}
 function puIcon(t,cx,cy,z){if(t==='s'){g.fillStyle='#ffd60a';g.strokeStyle='#b8860b';g.lineWidth=2;star(cx,cy,z*.85);g.stroke()}else{g.fillStyle='#ff7a00';circ(cx,cy,z*.75);g.fillStyle='#fff';tri(cx,cy-z*.5,cx-z*.38,cy,cx+z*.38,cy);tri(cx,cy-z*.1,cx-z*.38,cy+z*.4,cx+z*.38,cy+z*.4)}}
 function puDraw(p){const t=performance.now()/1000;g.globalAlpha=.25+.15*Math.sin(t*6);g.fillStyle=p.t==='s'?'#ffd60a':'#ff7a00';circ(p.x,p.y,LW*.3);g.globalAlpha=1;puIcon(p.t,p.x,p.y,LW*.22)}
-function slotUI(){slr=[];const t0=performance.now()/1000;[['s',hs,ts,RX+62,H*.68,'#ffd60a'],['b',hb,tb,RX+112,H*.68+66,'#ff7a00']].forEach(([t,held,act,cx,cy,col])=>{const r=36,on=held||act>0;
+function slotUI(){slr=[];const t0=performance.now()/1000;[['s',hs,ts,RX+62,H*.5-45,'#ffd60a'],['b',hb,tb,RX+120,H*.5+55,'#ff7a00']].forEach(([t,held,act,cx,cy,col])=>{const r=36,on=held||act>0;
 g.save();g.fillStyle=act>0?'rgba(126,231,135,.2)':on?'rgba(10,12,18,.32)':'rgba(10,12,18,.22)';circ(cx,cy,r);
 g.strokeStyle=act>0?'#7ee787':on?col:'rgba(255,255,255,.35)';g.lineWidth=3.5;if(on){g.shadowColor=act>0?'#7ee787':col;g.shadowBlur=10+6*Math.sin(t0*5)}g.beginPath();g.arc(cx,cy,r,0,7);g.stroke();g.restore();
 g.globalAlpha=on?1:.35;puIcon(t,cx,cy,r*.7);g.globalAlpha=1;
@@ -298,7 +298,7 @@ btn('🚗 Locker',W/2,H*.5,210,44,'#3b82f6',openLocker,'#fff');
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v20',W/2,H*.93,12,0,'#555a6e');
+txt('v21',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
