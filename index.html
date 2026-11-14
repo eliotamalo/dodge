@@ -88,7 +88,7 @@ else if(sh==='flake'){g.lineWidth=1.5;for(let a=0;a<3;a++){const r=a*Math.PI/3;g
 else circ(x,y,sz*.08*(1+k*.1))}g.globalAlpha=1}
 const BE=[['Rocket',0,['#ff7a00','#ffd23f','#ff3b00']],['Blue Flame',400,['#00b4ff','#7fe3ff','#ffffff']],['Toxic',500,['#39ff14','#b6ff6a','#1f9d2b']],['Plasma',600,['#c026d3','#ff5fe0','#7c3aed']],['Gold Rush',900,['#ffd700','#fff3b0','#d4af37']],['Rainbow Jet',1000,['#ff3b30','#ff9500','#ffd60a','#34c759','#0a84ff','#af52de']]];
 const SF=[['Golden Star',0,['#ffd60a','#fff3a3'],'#ffd60a','bigstar','#ffffff'],['Frost Form',400,['#7fd4ff','#ffffff'],'#bfe9ff','stars','#ffffff'],['Inferno Form',600,['#ff5a00','#ffd23f'],'#1a1a1f','flames','#ff7a18'],['Galaxy Form',800,['#a78bfa','#f0abfc'],'#2a1458','stars','#ffe9a8'],['Hyper Charge',1000,['#ff2e88','#7c3aed','#00e5ff'],'#0b0b14','tron','#ff2e88'],['Rainbow Form',1200,['#ff3b30','#ff9500','#ffd60a','#34c759','#0a84ff','#af52de'],'#ffffff','rainbow','#ffffff']];
-const MODES=[{n:'Cars',L:SK,ci:2,si:7,own:()=>D.owned,get:()=>D.skin,set:i=>{D.skin=i}},{n:'Trails',L:TR,ci:1,si:5,own:()=>D.trails,get:()=>D.trail,set:i=>{D.trail=i}},{n:'Boost',L:BE,ci:1,si:5,own:()=>D.bes,get:()=>D.be,set:i=>{D.be=i}},{n:'Star',L:SF,ci:1,si:5,own:()=>D.sfs,get:()=>D.sf,set:i=>{D.sf=i}}];
+const MODES=[{n:'Cars',L:SK,ci:2,si:7,own:()=>D.owned,get:()=>D.skin,set:i=>{D.skin=i}},{n:'Trails',L:TR,ci:1,si:5,own:()=>D.trails,get:()=>D.trail,set:i=>{D.trail=i}},{n:'Boost',L:BE,ci:1,si:5,own:()=>D.bes,get:()=>D.be,set:i=>{D.be=i}},{n:'Star',L:SF,ci:1,si:9,own:()=>D.sfs,get:()=>D.sf,set:i=>{D.sf=i}}];
 function bIcon(it,cx,cy,sz){const p=it[2];for(let k=0;k<5;k++){g.fillStyle=p[k%p.length];g.globalAlpha=1-k*.12;circ(cx+Math.sin(k*2)*sz*.05,cy-sz*.32+k*sz*.17,sz*.13*(1-k*.1))}g.globalAlpha=1}
 function sIcon(it,cx,cy,sz){const p=it[2];g.strokeStyle=p[0];g.lineWidth=3;g.beginPath();g.arc(cx,cy,sz*.3,0,7);g.stroke();g.fillStyle=p[1%p.length];star(cx,cy,sz*.17);for(let k=0;k<3;k++){g.fillStyle=p[(k+1)%p.length];circ(cx+Math.cos(k*2.1)*sz*.3,cy+Math.sin(k*2.1)*sz*.3,sz*.04)}}
 let lk={tab:0,mode:0,page:0,sel:0},sh={t:0,sub:0,page:0,sel:0},crateRes=[],crateT=0,crateCol='#3b82f6',crateShown=false;
@@ -361,7 +361,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v24',W/2,H*.93,12,0,'#555a6e');
+txt('v25',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
