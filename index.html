@@ -100,14 +100,15 @@ const MODES=[{n:'Cars',L:SK,ci:2,si:7,own:()=>D.owned,get:()=>D.skin,set:i=>{D.s
 function bIcon(it,cx,cy,sz){const p=it[2];for(let k=0;k<5;k++){g.fillStyle=p[k%p.length];g.globalAlpha=1-k*.12;circ(cx+Math.sin(k*2)*sz*.05,cy-sz*.32+k*sz*.17,sz*.13*(1-k*.1))}g.globalAlpha=1}
 function sIcon(it,cx,cy,sz){const p=it[2];g.strokeStyle=p[0];g.lineWidth=3;g.beginPath();g.arc(cx,cy,sz*.3,0,7);g.stroke();g.fillStyle=p[1%p.length];star(cx,cy,sz*.17);for(let k=0;k<3;k++){g.fillStyle=p[(k+1)%p.length];circ(cx+Math.cos(k*2.1)*sz*.3,cy+Math.sin(k*2.1)*sz*.3,sz*.04)}}
 let lk={tab:0,mode:0,page:0,sel:0},sh={t:0,sub:0,page:0,sel:0},crateRes=[],crateT=0,crateCol='#3b82f6',crateShown=false,crateIdx=0,lastTick=0,crateSeen=-1;
-const lm=()=>MODES[lk.mode],rndPick=a=>a[Math.random()*a.length|0];
+const lm=()=>MODES[lk.mode],rndPick=a=>a[Math.random()*a.length|0],DW={2:10,3:3,4:1},SEAS_DROP=.015;
+function wPick(pool){const w=pool.map(p=>DW[rarityOf(p)]);let x=Math.random()*w.reduce((a,b)=>a+b,0);for(let k=0;k<pool.length;k++){if(x<w[k])return pool[k];x-=w[k]}return pool[pool.length-1]}
 function geo(){const T=SAT+100,cw=Math.min(W,440),ox=(W-cw)/2,gw=cw-104,c=Math.min(92,(gw-16)/3);return{T,cw,ox,gx:ox+94,gw,c,gy:T+48}}
 function tabsRow(labels,act,fn){const G=geo(),n=labels.length,bw=(G.gw-(n-1)*4)/n;labels.forEach((l,k)=>btn(l,G.gx+bw/2+k*(bw+4),G.T+14,bw,38,act===k?'#3b82f6':'#2b2f3d',()=>fn(k),'#fff',13))}
 function sideBar(labels,act,fn){const G=geo(),n=labels.length,tot=3*(G.c+8)-8,h=(tot-(n-1)*8)/n;labels.forEach((l,k)=>btn(l,G.ox+46,G.gy+k*(h+8)+h/2,76,h,act===k?'#3b82f6':'#2b2f3d',()=>fn(k),'#fff',n>2?12:14))}
 function cellIcon(m,L,i,mx,my,c){if(m===0)car(mx,my,c*.36,i);else if(m===1)tIcon(L[i],mx,my,c);else if(m===2)bIcon(L[i],mx,my,c);else car(mx,my,c*.36,D.skin,i)}
 function gridUI(mode,list,st,own,eq,mark){const G=geo(),L=MODES[mode].L,pages=Math.max(1,Math.ceil(list.length/9));if(st.page>=pages)st.page=0;
 for(let n=0;n<9;n++){const i=list[st.page*9+n];if(i==null)break;const x0=G.gx+(n%3)*(G.c+8),y0=G.gy+(n/3|0)*(G.c+8),o=own.includes(i);
-rr(x0,y0,G.c,G.c,12,st.sel===i?'rgba(245,197,66,.18)':'rgba(255,255,255,.07)');
+rr(x0,y0,G.c,G.c,12,st.sel===i?'rgba(245,197,66,.18)':'rgba(255,255,255,.07)');rr(x0+12,y0+5,G.c-24,3,2,RAR[itemRar(mode,i)][1]);
 if(st.sel===i){g.strokeStyle='#f5c542';g.lineWidth=3;g.beginPath();g.roundRect(x0,y0,G.c,G.c,12);g.stroke()}
 g.globalAlpha=o?1:.45;cellIcon(mode,L,i,x0+G.c/2,y0+G.c/2,G.c);g.globalAlpha=1;
 if(!o)txt('🔒',x0+16,y0+20,14,0);else if(mark==='own'||i===eq)txt('✓',x0+G.c-14,y0+20,18,1,'#7ee787');
@@ -126,7 +127,7 @@ txt('Your cars, trails, boosts and stars',W/2,G.T-8,13,0,'#8a90a6');
 tabsRow(MODES.map(m=>m.n),lk.mode,k=>lkSet(k,0));sideBar(['Standard','Seasonal'],lk.tab,t=>lkSet(lk.mode,t));
 const list=lkList();if(!list.length){txt(lk.tab?'No seasonal items yet':'Nothing here yet',G.gx+G.gw/2,G.gy+G.c,15,1,'#aab0c4');txt(lk.tab?'Win them in seasonal crates':'Find more in the Shop',G.gx+G.gw/2,G.gy+G.c+22,13,0,'#8a90a6');return}
 const iy=gridUI(lk.mode,list,lk,M.own(),eq,'eq'),i=lk.sel;if(i==null)return;
-txt(L[i][0],W/2,iy,22,1);const sub=[['','','Boost effect','Star form'][lk.mode],i===eq?'Equipped':'Owned',lk.mode===0&&L[i][7]?'2× coins':''].filter(Boolean).join(' · ');txt(sub,W/2,iy+22,14,0,'#aab0c4');
+txt(L[i][0],W/2,iy,22,1);const rn=RAR[itemRar(lk.mode,i)][0],sub=[rn[0]+rn.slice(1).toLowerCase(),['','','Boost effect','Star form'][lk.mode],i===eq?'Equipped':'Owned',lk.mode===0&&L[i][7]?'2× coins':''].filter(Boolean).join(' · ');txt(sub,W/2,iy+22,14,0,'#aab0c4');
 btn(i===eq?'Equipped ✓':'Equip',W/2,iy+60,230,46,i===eq?'#2b2f3d':'#3b82f6',()=>{M.set(i);save()},i===eq?'#7ee787':'#fff')}
 // ---------- shop ----------
 let ss={y:0,vy:0,max:0,drag:false,moved:0,lastY:0,hit:null},sbtns=[],pop=null,conf=null,codeMsg='',codeMsgUntil=0;
@@ -152,14 +153,14 @@ function crateIcon(cx,cy,z,col){const x=cx-z/2,y=cy-z/2;rr(x,y+z*.22,z,z*.78,8,c
 function unown(m,f){const M=MODES[m],own=M.own();return M.L.map((v,i)=>i).filter(i=>!own.includes(i)&&f(M.L[i]))}
 function grantRes(r){if(r.k==='coins')D.coins+=r.n;else MODES[{car:0,trail:1,boost:2,star:3}[r.k]].own().push(r.i);return r}
 function crateRoll(seas){
-if(seas){const pool=[];unown(0,l=>l[7]&&SEA[l[7]]).forEach(i=>pool.push({k:'car',i}));unown(1,l=>l[5]&&SEA[l[5]]).forEach(i=>pool.push({k:'trail',i}));if(pool.length&&Math.random()<.35)return grantRes(rndPick(pool))}
+if(seas){const pool=[];unown(0,l=>l[7]&&SEA[l[7]]).forEach(i=>pool.push({k:'car',i}));unown(1,l=>l[5]&&SEA[l[5]]).forEach(i=>pool.push({k:'trail',i}));if(pool.length&&Math.random()<SEAS_DROP)return grantRes(rndPick(pool))}
 const r=Math.random()*100,C=n=>grantRes({k:'coins',n});
 if(r<22)return C(200);if(r<40)return C(250);if(r<55)return C(300);if(r<59)return C(800);
 const pool=[];
 if(r<74)unown(0,l=>!l[7]).forEach(i=>pool.push({k:'car',i}));
 else if(r<88){unown(1,l=>!l[5]&&l[2]).forEach(i=>pool.push({k:'trail',i}));unown(2,l=>true).forEach(i=>pool.push({k:'boost',i}))}
 else unown(3,l=>true).forEach(i=>pool.push({k:'star',i}));
-return pool.length?grantRes(rndPick(pool)):C(250)}
+return pool.length?grantRes(wPick(pool)):C(250)}
 function giveCrates(n,seas,col){crateRes=[];for(let k=0;k<n;k++)crateRes.push(crateRoll(seas));save();crateCol=col;crateT=performance.now();crateShown=false;crateIdx=0;lastTick=0;crateSeen=-1;scr='open';sfx('crate')}
 function buyCrates(n,p,seas,col){if(D.coins<p){msg='Need '+(p-D.coins)+' more coins';msgUntil=performance.now()+2000;return}
 D.coins-=p;giveCrates(n,seas,col)}
@@ -172,16 +173,18 @@ const sec=t=>{txtL(t,L0,Y(cy)+26,26,1);rr(L0,Y(cy)+36,gw,3,2,'rgba(255,255,255,.
 const sub=t=>{txtL(t,L0,Y(cy)+14,16,1,'#aab0c4');cy+=28};
 const grid=(m,list)=>{const M=MODES[m],Lm=M.L,own=M.own();
 list.forEach((i,k)=>{const x0=L0+(k%3)*(c+8),y0=Y(cy+(k/3|0)*(c+8));if(y0>H||y0+c<vt)return;const o=own.includes(i),sea=Lm[i][M.si],cost=Lm[i][M.ci];
-rr(x0,y0,c,c,14,'rgba(255,255,255,.07)');cellIcon(m,Lm,i,x0+c/2,y0+c*.36,(m===1||m===2)?c*.52:c*.8);txt(Lm[i][0],x0+c/2,y0+c*.72,12,1);
+rr(x0,y0,c,c,14,'rgba(255,255,255,.07)');rr(x0+14,y0+6,c-28,3,2,RAR[itemRar(m,i)][1]);cellIcon(m,Lm,i,x0+c/2,y0+c*.36,(m===1||m===2)?c*.52:c*.8);txt(Lm[i][0],x0+c/2,y0+c*.72,12,1);
 if(o)txt('✓ Owned',x0+c/2,y0+c*.9,12,1,'#7ee787');else if(sea)txt('🎁 Crate only',x0+c/2,y0+c*.9,12,1,'#d8b4fe');else priceTag(x0+c/2,y0+c*.9-4,cost,13);
 sbtns.push({x:x0,y:y0,w:c,h:c,fn:()=>{pop={m,i}}})});
 cy+=Math.ceil(list.length/3)*(c+8)+6};
 const lst=(m,f)=>{const M=MODES[m];return M.L.map((v,i)=>i).filter(i=>f(M.L[i],M)).sort(byPrice(M))};
 sec('Cars');sub('Standard');grid(0,lst(0,(l,M)=>!l[M.si]));
-sub('Seasonal');const sc=lst(0,(l,M)=>l[M.si]&&SEA[l[M.si]]);if(sc.length)grid(0,sc);else{txtL('No seasonal cars right now · they drop from seasonal crates',L0,Y(cy)+12,12,0,'#8a90a6');cy+=34}
-sec('Effects');sub('Trails');grid(1,lst(1,(l,M)=>l[2]&&(!l[M.si]||SEA[l[M.si]])));sub('Boosts');grid(2,lst(2,()=>true));sub('Star Forms');grid(3,lst(3,()=>true));
+sec('Effects');sub('Trails');grid(1,lst(1,(l,M)=>l[2]&&!l[M.si]));sub('Boosts');grid(2,lst(2,()=>true));sub('Star Forms');grid(3,lst(3,()=>true));
+sec('Seasonal');{const scar=lst(0,(l,M)=>l[M.si]&&SEA[l[M.si]]),str=lst(1,(l,M)=>l[M.si]&&SEA[l[M.si]]);
+if(!scar.length&&!str.length){txtL('No seasonal items right now',L0,Y(cy)+10,14,1,'#aab0c4');txtL('They drop from seasonal crates during events',L0,Y(cy)+30,12,0,'#8a90a6');cy+=56}
+else{txtL('Only from seasonal crates · '+['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ')+' event',L0,Y(cy)+8,12,0,'#8a90a6');cy+=22;if(scar.length){sub('Cars');grid(0,scar)}if(str.length){sub('Trails');grid(1,str)}}}
 sec('Crates');const act=['tg','xm','ny'].filter(k=>SEA[k]),types=[{n:'Crate',col:'#3b82f6',sea:false,d:'Cars, coins, trails, boosts, star forms'}];
-if(act.length)types.push({n:(act.length>1?'Holiday':SEAN[act[0]][0])+' Crate',col:act[0]==='tg'?'#d2691e':act[0]==='xm'?'#d62839':'#d4af37',sea:true,d:'Seasonal items + everything else'});
+if(act.length)types.push({n:(act.length>1?'Holiday':SEAN[act[0]][0])+' Crate',col:act[0]==='tg'?'#d2691e':act[0]==='xm'?'#d62839':'#d4af37',sea:true,d:'Small chance at seasonal items'});
 types.forEach(t=>{const y0=Y(cy);if(!(y0>H||y0+150<vt)){rr(L0,y0,gw,150,16,'rgba(255,255,255,.07)');crateIcon(L0+48,y0+52,50,t.col);txtL(t.n,L0+90,y0+40,20,1);txtL(t.d,L0+90,y0+62,12,0,'#aab0c4');
 const bw=(gw-24)/3;[[1,500],[5,2250],[10,4500]].forEach(([n,p],j)=>sbtn2(n+(n>1?' crates':' crate'),p,L0+12+bw/2+j*(bw+6),y0+114,bw,46,D.coins>=p?'#1f9d55':'#4a4f63',()=>askBuy('Buy '+n+(n>1?' crates?':' crate?'),p,(x,y)=>crateIcon(x,y,70,t.col),()=>buyCrates(n,p,t.sea,t.col))))}cy+=165});
 sec('Codes');{const y0=Y(cy);if(!(y0>H||y0+130<vt)){rr(L0,y0,gw,130,16,'rgba(255,255,255,.07)');txt('Have a code?',W/2,y0+36,20,1);txt('Enter it to claim free rewards',W/2,y0+58,13,0,'#aab0c4');sbtn('Enter code',W/2,y0+96,200,42,'#3b82f6',openCodeBox,'#fff',16)}cy+=145}
@@ -193,7 +196,7 @@ if(!pop&&performance.now()<msgUntil){rr(W/2-130,H-90,260,40,20,'rgba(200,50,50,.
 if(pop){const m=pop.m,i=pop.i,M=MODES[m],Lm=M.L,o=M.own().includes(i),sea=Lm[i][M.si],cost=Lm[i][M.ci],pw=Math.min(320,W-40),px=(W-pw)/2,py=Math.max(vt,H*.5-186);
 btns=[];g.fillStyle='rgba(0,0,0,.65)';g.fillRect(0,0,W,H);rr(px,py,pw,372,20,'#1b1e29');
 if(m===0)car(W/2,py+95,76,i);else if(m===1)tIcon(Lm[i],W/2,py+95,150);else if(m===2)bIcon(Lm[i],W/2,py+95,150);else car(W/2,py+95,76,D.skin,i);
-txt(Lm[i][0],W/2,py+200,22,1);txt(['Car','Trail','Boost effect','Star form'][m]+(sea?' · '+SEAN[sea][0]+' exclusive':''),W/2,py+224,13,0,'#aab0c4');
+{const q=itemRar(m,i);txt(RAR[q][0],W/2,py+174,13,1,RAR[q][1])}txt(Lm[i][0],W/2,py+200,22,1);txt(['Car','Trail','Boost effect','Star form'][m]+(sea?' · '+SEAN[sea][0]+' exclusive':''),W/2,py+224,13,0,'#aab0c4');
 if(m===0&&sea)txt('Earns 2× on road coins',W/2,py+244,12,0,'#8a90a6');
 if(performance.now()<msgUntil)txt(msg,W/2,py+268,13,1,'#ff8b8b');
 if(o)btn('Owned ✓',W/2,py+292,230,44,'#2b2f3d',()=>{},'#7ee787');else if(sea)btn('Crate exclusive',W/2,py+292,230,44,'#2b2f3d',()=>{},'#8a90a6');
@@ -206,8 +209,9 @@ btn('Confirm',W/2,py+234,220,44,'#1f9d55',()=>{if(performance.now()-conf.t<400)r
 btn('Cancel',W/2,py+280,140,34,'#2b2f3d',()=>{conf=null},'#fff',14);
 btns.push({x:px,y:py,w:pw,h:300,fn:()=>{}});btns.push({x:0,y:0,w:W,h:H,fn:()=>{conf=null}})}}
 function resIcon(r,x,y,z){if(r.k==='coin'||r.k==='coins')coin(x,y,z*.32);else if(r.k==='car')car(x,y,z*.36,r.i);else if(r.k==='trail')tIcon(TR[r.i],x,y,z);else if(r.k==='boost')bIcon(BE[r.i],x,y,z);else car(x,y,z*.36,D.skin,r.i)}
-const RAR=[['COMMON','#9ca3af'],['UNCOMMON','#38bdf8'],['RARE','#a855f7'],['EPIC','#f472b6'],['LEGENDARY','#f5c542']];
-function rarityOf(r){if(r.k==='coins')return r.n>=800?4:r.n>=300?1:0;if(r.k==='car')return SK[r.i][7]?4:3;if(r.k==='trail')return TR[r.i][5]?4:2;return 2}
+const RAR=[['COMMON','#9ca3af'],['UNCOMMON','#38bdf8'],['RARE','#a855f7'],['EPIC','#ef4444'],['LEGENDARY','#f5c542'],['SEASONAL','#22c55e']];
+function itemRar(m,i){const M=MODES[m],it=M.L[i];if(it[M.si])return 5;const p=it[M.ci];return p<500?2:p<1000?3:4}
+function rarityOf(r){if(r.k==='coins')return r.n>=800?3:r.n>=300?1:0;return itemRar({car:0,trail:1,boost:2,star:3}[r.k],r.i)}
 function glow(cx,cy,rad,col,a){const gr=g.createRadialGradient(cx,cy,0,cx,cy,rad);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=a;g.fillStyle=gr;g.beginPath();g.arc(cx,cy,rad,0,7);g.fill();g.restore()}
 function resName(r){return r.k==='coins'?'+'+r.n+' coins':r.k==='car'?SK[r.i][0]:r.k==='trail'?TR[r.i][0]:r.k==='boost'?BE[r.i][0]:SF[r.i][0]}
 const RTAG={coins:'Coins',car:'New car',trail:'New trail',boost:'New boost effect',star:'New star form'};
@@ -236,7 +240,7 @@ if(u<1.2)for(let k=0;k<28;k++){const a=k*2.399,sp=110+(k*37%190),d=sp*u*(1-.25*u
 g.save();g.translate(cx,cy);g.scale(e,e);resIcon(r,0,0,200);g.restore();
 const fa=Math.max(0,1-u/.35);if(fa>0){g.fillStyle='rgba(255,255,255,'+fa+')';g.fillRect(0,0,W,H)}
 const ta=Math.min(1,Math.max(0,(u-.25)/.4));g.globalAlpha=ta;
-txt(resName(r),W/2,cy+150,r.k==='coins'?34:26,1,r.k==='coins'?'#f5c542':'#fff');txt(rar[0],W/2,cy+178,14,1,rar[1]);txt((r.k!=='coins'&&((r.k==='car'&&SK[r.i][7])||(r.k==='trail'&&TR[r.i][5]))?'Seasonal · ':'')+RTAG[r.k],W/2,cy+198,13,0,'#8a90a6');g.globalAlpha=1;
+txt(resName(r),W/2,cy+150,r.k==='coins'?34:26,1,r.k==='coins'?'#f5c542':'#fff');txt(rar[0],W/2,cy+178,14,1,rar[1]);txt(RTAG[r.k],W/2,cy+198,13,0,'#8a90a6');g.globalAlpha=1;
 if(u>.9)btn(crateIdx<n-1?'Next':(n>1?'See all rewards':'Done'),W/2,cy+260,220,50,'#3b82f6',()=>{if(crateIdx<n-1){crateIdx++;crateT=performance.now()}else if(n>1){crateIdx=n}else{scr='shop'}},'#fff')}
 const F=(p,b)=>(b?'bold ':'')+p+'px -apple-system,system-ui,sans-serif';
 let W,H,RW,RX,LW,CW,CH,carY,SAT=0;
@@ -431,7 +435,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v29',W/2,H*.93,12,0,'#555a6e');
+txt('v31',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
