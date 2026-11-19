@@ -193,8 +193,15 @@ if(!scar.length&&!str.length){txtL('No seasonal items right now',L0,Y(cy)+10,14,
 else{txtL('Only from seasonal crates · '+['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ')+' event',L0,Y(cy)+8,12,0,'#8a90a6');cy+=22;if(scar.length){sub('Cars');grid(0,scar)}if(str.length){sub('Trails');grid(1,str)}}}
 sec('Crates');const act=['tg','xm','ny'].filter(k=>SEA[k]),types=[{n:'Crate',col:'#3b82f6',sea:false,d:'Cars, coins, trails, boosts, star forms'}];
 if(act.length)types.push({n:(act.length>1?'Holiday':SEAN[act[0]][0])+' Crate',col:act[0]==='tg'?'#d2691e':act[0]==='xm'?'#d62839':'#d4af37',sea:true,d:'Small chance at seasonal items'});
-types.forEach(t=>{const y0=Y(cy);if(!(y0>H||y0+150<vt)){rr(L0,y0,gw,150,16,'rgba(255,255,255,.07)');crateIcon(L0+48,y0+52,50,t.col);txtL(t.n,L0+90,y0+40,20,1);txtL(t.d,L0+90,y0+62,12,0,'#aab0c4');if(t.sea)txtL(pityLine(),L0+90,y0+80,12,1,'#22c55e')
-const bw=(gw-24)/3;[[1,500],[5,2250],[10,4500]].forEach(([n,p],j)=>sbtn2(n+(n>1?' crates':' crate'),p,L0+12+bw/2+j*(bw+6),y0+114,bw,46,D.coins>=p?'#1f9d55':'#4a4f63',()=>askBuy('Buy '+n+(n>1?' crates?':' crate?'),p,(x,y)=>crateIcon(x,y,70,t.col),()=>buyCrates(n,p,t.sea,t.col))))}cy+=165});
+types.forEach(t=>{const ev=t.sea?['tg','xm','ny'].filter(k=>SEA[k]&&poolFor(k).length):[],h=t.sea?148+54*Math.max(1,ev.length)+6:150,y0=Y(cy);
+if(!(y0>H||y0+h<vt)){rr(L0,y0,gw,h,16,'rgba(255,255,255,.07)');crateIcon(L0+48,y0+52,50,t.col);txtL(t.n,L0+90,y0+40,20,1);txtL(t.d,L0+90,y0+62,12,0,'#aab0c4');
+const bw=(gw-24)/3;[[1,500],[5,2250],[10,4500]].forEach(([n,p],j)=>sbtn2(n+(n>1?' crates':' crate'),p,L0+12+bw/2+j*(bw+6),y0+114,bw,46,D.coins>=p?'#1f9d55':'#4a4f63',()=>askBuy('Buy '+n+(n>1?' crates?':' crate?'),p,(x,y)=>crateIcon(x,y,70,t.col),()=>buyCrates(n,p,t.sea,t.col))));
+if(t.sea){if(!ev.length)txtL('You own every seasonal item!',L0+16,y0+176,14,1,'#22c55e');
+else ev.forEach((e,k)=>{const c=(D.pity&&D.pity[e])||0,due=D.owed&&D.owed[e]>0,prog=due?SEAS_PITY:c%SEAS_PITY,left=SEAS_PITY-prog,by=y0+148+k*54;
+txtL(SEAN[e][0]+' guarantee',L0+16,by+14,12,1,'#aab0c4');g.textAlign='right';txt(prog+' / '+SEAS_PITY+' opened',L0+gw-16,by+14,12,1,'#fff');g.textAlign='center';
+rr(L0+16,by+22,gw-32,10,5,'rgba(255,255,255,.12)');if(prog)rr(L0+16,by+22,Math.max(10,(gw-32)*prog/SEAS_PITY),10,5,'#22c55e');
+txt(due?'Guaranteed reward on your next crate!':left+(left>1?' more crates':' more crate')+' to a guaranteed seasonal item',W/2,by+47,11,0,'#8a90a6')})}}
+cy+=h+15});
 sec('Codes');{const y0=Y(cy);if(!(y0>H||y0+130<vt)){rr(L0,y0,gw,130,16,'rgba(255,255,255,.07)');txt('Have a code?',W/2,y0+36,20,1);txt('Enter it to claim free rewards',W/2,y0+58,13,0,'#aab0c4');sbtn('Enter code',W/2,y0+96,200,42,'#3b82f6',openCodeBox,'#fff',16)}cy+=145}
 if(performance.now()<codeMsgUntil)txt(codeMsg,W/2,Y(cy)+6,15,1,'#7ee787');cy+=34;
 ss.max=Math.max(0,cy+20-(H-vt));g.restore();
@@ -443,7 +450,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v33',W/2,H*.93,12,0,'#555a6e');
+txt('v34',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
