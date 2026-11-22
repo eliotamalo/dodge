@@ -133,7 +133,7 @@ btn(i===eq?'Equipped ✓':'Equip',W/2,iy+60,230,46,i===eq?'#2b2f3d':'#3b82f6',()
 // ---------- shop ----------
 let ss={y:0,vy:0,max:0,drag:false,moved:0,lastY:0,hit:null},sbtns=[],pop=null,conf=null,codeMsg='',codeMsgUntil=0;
 function openShop(){TH=mkTheme();SEA=seasonNow();ss.y=0;ss.vy=0;ss.drag=false;pop=null;conf=null;scr='shop'}
-const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10},THANKYOU:{crates:10,event:'tg'},THNSKGVN:{crates:1,event:'tg'}};
+const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10},THANKYOU:{crates:10,event:'tg'},THNSKGVN:{crates:1,event:'tg'}, TURKEY20:{crates:20,event:'tg'}};
 const cm=document.getElementById('cm'),ci=document.getElementById('ci'),cmsg=document.getElementById('cmsg');
 function redeem(code){if(!code)return{ok:false,msg:'Type a code first'};const r=CODES[code];if(!r)return{ok:false,msg:'That code is not valid'};if(D.codes.includes(code))return{ok:false,msg:'You already used that code'};
 D.codes.push(code);const p=[];if(r.coins){D.coins+=r.coins;p.push('+'+r.coins+' coins')}if(r.crates)p.push(r.crates+' free '+(r.event?SEAN[r.event][0]+' ':'')+(r.crates>1?'crates':'crate'));save();return{ok:true,msg:p.join(' · '),crates:r.crates||0,event:r.event||null}}
