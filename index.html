@@ -133,13 +133,13 @@ btn(i===eq?'Equipped ✓':'Equip',W/2,iy+60,230,46,i===eq?'#2b2f3d':'#3b82f6',()
 // ---------- shop ----------
 let ss={y:0,vy:0,max:0,drag:false,moved:0,lastY:0,hit:null},sbtns=[],pop=null,conf=null,codeMsg='',codeMsgUntil=0;
 function openShop(){TH=mkTheme();SEA=seasonNow();ss.y=0;ss.vy=0;ss.drag=false;pop=null;conf=null;scr='shop'}
-const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10}};
+const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10},THANKYOU:{crates:10,event:'tg'},THNSKGVN:{crates:1,event:'tg'}};
 const cm=document.getElementById('cm'),ci=document.getElementById('ci'),cmsg=document.getElementById('cmsg');
 function redeem(code){if(!code)return{ok:false,msg:'Type a code first'};const r=CODES[code];if(!r)return{ok:false,msg:'That code is not valid'};if(D.codes.includes(code))return{ok:false,msg:'You already used that code'};
-D.codes.push(code);const p=[];if(r.coins){D.coins+=r.coins;p.push('+'+r.coins+' coins')}if(r.crates)p.push(r.crates+(r.crates>1?' free crates':' free crate'));save();return{ok:true,msg:p.join(' · '),crates:r.crates||0}}
+D.codes.push(code);const p=[];if(r.coins){D.coins+=r.coins;p.push('+'+r.coins+' coins')}if(r.crates)p.push(r.crates+' free '+(r.event?SEAN[r.event][0]+' ':'')+(r.crates>1?'crates':'crate'));save();return{ok:true,msg:p.join(' · '),crates:r.crates||0,event:r.event||null}}
 function openCodeBox(){cm.style.display='flex';ci.value='';cmsg.textContent='';setTimeout(()=>ci.focus(),60)}
 function submitCode(){const r=redeem(ci.value.replace(/\s+/g,'').toUpperCase());if(!r.ok){cmsg.textContent=r.msg;return}
-cm.style.display='none';ci.blur();codeMsg='Code redeemed: '+r.msg;codeMsgUntil=performance.now()+6000;sfx('claim');if(r.crates)giveCrates(r.crates,false,'#3b82f6')}
+cm.style.display='none';ci.blur();codeMsg='Code redeemed: '+r.msg;codeMsgUntil=performance.now()+6000;sfx('claim');if(r.crates)giveCrates(r.crates,!!r.event,r.event?{tg:'#d2691e',xm:'#d62839',ny:'#d4af37'}[r.event]:'#3b82f6',r.event?[r.event]:null)}
 document.getElementById('cok').addEventListener('click',submitCode);document.getElementById('cno').addEventListener('click',()=>{cm.style.display='none';ci.blur()});
 ci.addEventListener('keydown',e=>{if(e.key==='Enter')submitCode()});
 function priceTag(cx,cy,amt,fs,col){const t=amt.toLocaleString();g.font=F(fs,1);const w=g.measureText(t).width,r=fs*.55,x0=cx-(r*2+5+w)/2;coin(x0+r,cy,r);g.textAlign='left';g.fillStyle=col||'#f5c542';g.fillText(t,x0+r*2+5,cy+fs*.35);g.textAlign='center'}
@@ -157,12 +157,12 @@ function poolFor(e){const p=[];unown(0,l=>l[7]===e).forEach(i=>p.push({k:'car',i
 function pityLine(){const act=['tg','xm','ny'].filter(k=>SEA[k]&&poolFor(k).length);if(!act.length)return'You own every seasonal item!';
 const p=act.map(e=>({n:SEAN[e][0],l:(D.owed&&D.owed[e]>0)?1:SEAS_PITY-((D.pity&&D.pity[e])||0)%SEAS_PITY}));
 return act.length===1?'Seasonal item guaranteed in '+p[0].l+(p[0].l>1?' crates':' crate'):'Guaranteed in '+p.map(x=>x.n+' '+x.l).join(' · ')}
-function seasPool(){const p=[];unown(0,l=>l[7]&&SEA[l[7]]).forEach(i=>p.push({k:'car',i}));unown(1,l=>l[5]&&SEA[l[5]]).forEach(i=>p.push({k:'trail',i}));unown(3,l=>l[7]&&SEA[l[7]]).forEach(i=>p.push({k:'star',i}));return p}
-function crateRoll(seas){
-if(seas){const act=['tg','xm','ny'].filter(k=>SEA[k]);D.pity=D.pity||{};D.owed=D.owed||{};
+function seasPool(act){act=act||['tg','xm','ny'].filter(k=>SEA[k]);const p=[];unown(0,l=>act.includes(l[7])).forEach(i=>p.push({k:'car',i}));unown(1,l=>act.includes(l[5])).forEach(i=>p.push({k:'trail',i}));unown(3,l=>act.includes(l[7])).forEach(i=>p.push({k:'star',i}));return p}
+function crateRoll(seas,ev){
+if(seas){const act=ev||['tg','xm','ny'].filter(k=>SEA[k]);D.pity=D.pity||{};D.owed=D.owed||{};
 act.forEach(e=>{D.pity[e]=(D.pity[e]||0)+1;if(D.pity[e]%SEAS_PITY===0)D.owed[e]=(D.owed[e]||0)+1});
 for(const e of act){if((D.owed[e]||0)>0){const pe=poolFor(e);if(pe.length){D.owed[e]--;const r=grantRes(rndPick(pe));r.pity=true;return r}D.owed[e]=0}}
-const pool=seasPool();if(pool.length&&Math.random()<SEAS_DROP)return grantRes(rndPick(pool))}
+const pool=seasPool(act);if(pool.length&&Math.random()<SEAS_DROP)return grantRes(rndPick(pool))}
 const r=Math.random()*100,C=n=>grantRes({k:'coins',n});
 if(r<22)return C(200);if(r<40)return C(250);if(r<55)return C(300);if(r<59)return C(800);
 const pool=[];
@@ -170,7 +170,7 @@ if(r<74)unown(0,l=>!l[7]).forEach(i=>pool.push({k:'car',i}));
 else if(r<88){unown(1,l=>!l[5]&&l[2]).forEach(i=>pool.push({k:'trail',i}));unown(2,l=>true).forEach(i=>pool.push({k:'boost',i}))}
 else unown(3,l=>!l[7]).forEach(i=>pool.push({k:'star',i}));
 return pool.length?grantRes(wPick(pool)):C(250)}
-function giveCrates(n,seas,col){crateRes=[];for(let k=0;k<n;k++)crateRes.push(crateRoll(seas));save();crateCol=col;crateT=performance.now();crateShown=false;crateIdx=0;lastTick=0;crateSeen=-1;scr='open';sfx('crate')}
+function giveCrates(n,seas,col,ev){crateRes=[];for(let k=0;k<n;k++)crateRes.push(crateRoll(seas,ev));save();crateCol=col;crateT=performance.now();crateShown=false;crateIdx=0;lastTick=0;crateSeen=-1;scr='open';sfx('crate')}
 function buyCrates(n,p,seas,col){if(D.coins<p){msg='Need '+(p-D.coins)+' more coins';msgUntil=performance.now()+2000;return}
 D.coins-=p;giveCrates(n,seas,col)}
 function shop(){const vt=SAT+96,cw=Math.min(W,440),ox=(W-cw)/2,pad=12,gw=cw-pad*2,c=(gw-16)/3,L0=ox+pad;sbtns=[];
@@ -465,7 +465,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v35',W/2,H*.93,12,0,'#555a6e');
+txt('v36',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
