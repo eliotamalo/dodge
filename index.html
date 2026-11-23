@@ -133,7 +133,7 @@ btn(i===eq?'Equipped ✓':'Equip',W/2,iy+60,230,46,i===eq?'#2b2f3d':'#3b82f6',()
 // ---------- shop ----------
 let ss={y:0,vy:0,max:0,drag:false,moved:0,lastY:0,hit:null},sbtns=[],pop=null,conf=null,codeMsg='',codeMsgUntil=0;
 function openShop(){TH=mkTheme();SEA=seasonNow();ss.y=0;ss.vy=0;ss.drag=false;pop=null;conf=null;scr='shop'}
-const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10},THANKYOU:{crates:10,event:'tg'},THNSKGVN:{crates:1,event:'tg'}, TURKEY20:{crates:20,event:'tg'},GIMMEE20:{crates:20,event:'tg'},GIVEME20:{crates:20,event:'tg'}};
+const CODES={'WELCOME!':{coins:200},DODGEONE:{crates:1},LAUNCHV:{coins:500,crates:1},TENTEN10:{crates:10},THANKYOU:{crates:10,event:'tg'},THNSKGVN:{crates:1,event:'tg'}};
 const cm=document.getElementById('cm'),ci=document.getElementById('ci'),cmsg=document.getElementById('cmsg');
 function redeem(code){if(!code)return{ok:false,msg:'Type a code first'};const r=CODES[code];if(!r)return{ok:false,msg:'That code is not valid'};if(D.codes.includes(code))return{ok:false,msg:'You already used that code'};
 D.codes.push(code);const p=[];if(r.coins){D.coins+=r.coins;p.push('+'+r.coins+' coins')}if(r.crates)p.push(r.crates+' free '+(r.event?SEAN[r.event][0]+' ':'')+(r.crates>1?'crates':'crate'));save();return{ok:true,msg:p.join(' · '),crates:r.crates||0,event:r.event||null}}
@@ -161,7 +161,6 @@ function seasPool(act){act=act||['tg','xm','ny'].filter(k=>SEA[k]);const p=[];un
 function crateRoll(seas,ev){
 if(seas){const act=ev||['tg','xm','ny'].filter(k=>SEA[k]);D.pity=D.pity||{};D.owed=D.owed||{};
 act.forEach(e=>{D.pity[e]=(D.pity[e]||0)+1;if(D.pity[e]%SEAS_PITY===0)D.owed[e]=(D.owed[e]||0)+1});
-for(const e of act){if((D.owed[e]||0)>0){const pe=poolFor(e);if(pe.length){D.owed[e]--;const r=grantRes(rndPick(pe));r.pity=true;return r}D.owed[e]=0}}
 const pool=seasPool(act);if(pool.length&&Math.random()<SEAS_DROP)return grantRes(rndPick(pool))}
 const r=Math.random()*100,C=n=>grantRes({k:'coins',n});
 if(r<22)return C(200);if(r<40)return C(250);if(r<55)return C(300);if(r<59)return C(800);
@@ -170,7 +169,8 @@ if(r<74)unown(0,l=>!l[7]).forEach(i=>pool.push({k:'car',i}));
 else if(r<88){unown(1,l=>!l[5]&&l[2]).forEach(i=>pool.push({k:'trail',i}));unown(2,l=>true).forEach(i=>pool.push({k:'boost',i}))}
 else unown(3,l=>!l[7]).forEach(i=>pool.push({k:'star',i}));
 return pool.length?grantRes(wPick(pool)):C(250)}
-function giveCrates(n,seas,col,ev){crateRes=[];for(let k=0;k<n;k++)crateRes.push(crateRoll(seas,ev));save();crateCol=col;crateT=performance.now();crateShown=false;crateIdx=0;lastTick=0;crateSeen=-1;scr='open';sfx('crate')}
+function takeBonus(ev){const out=[],act=ev||['tg','xm','ny'].filter(k=>SEA[k]);D.owed=D.owed||{};for(const e of act){while((D.owed[e]||0)>0){D.owed[e]--;const pe=poolFor(e);if(!pe.length){D.owed[e]=0;break}const r=grantRes(rndPick(pe));r.bonus=true;out.push(r)}}return out}
+function giveCrates(n,seas,col,ev){crateRes=[];for(let k=0;k<n;k++){crateRes.push(crateRoll(seas,ev));if(seas)takeBonus(ev).forEach(b=>crateRes.push(b))}save();crateCol=col;crateT=performance.now();crateShown=false;crateIdx=0;lastTick=0;crateSeen=-1;scr='open';sfx('crate')}
 function buyCrates(n,p,seas,col){if(D.coins<p){msg='Need '+(p-D.coins)+' more coins';msgUntil=performance.now()+2000;return}
 D.coins-=p;giveCrates(n,seas,col)}
 function shop(){const vt=SAT+96,cw=Math.min(W,440),ox=(W-cw)/2,pad=12,gw=cw-pad*2,c=(gw-16)/3,L0=ox+pad;sbtns=[];
@@ -198,10 +198,10 @@ types.forEach(t=>{const ev=t.sea?['tg','xm','ny'].filter(k=>SEA[k]&&poolFor(k).l
 if(!(y0>H||y0+h<vt)){rr(L0,y0,gw,h,16,'rgba(255,255,255,.07)');crateIcon(L0+48,y0+52,50,t.col);txtL(t.n,L0+90,y0+40,20,1);txtL(t.d,L0+90,y0+62,12,0,'#aab0c4');
 const bw=(gw-24)/3;[[1,500],[5,2250],[10,4500]].forEach(([n,p],j)=>sbtn2(n+(n>1?' crates':' crate'),p,L0+12+bw/2+j*(bw+6),y0+114,bw,46,D.coins>=p?'#1f9d55':'#4a4f63',()=>askBuy('Buy '+n+(n>1?' crates?':' crate?'),p,(x,y)=>crateIcon(x,y,70,t.col),()=>buyCrates(n,p,t.sea,t.col))));
 if(t.sea){if(!ev.length)txtL('You own every seasonal item!',L0+16,y0+176,14,1,'#22c55e');
-else ev.forEach((e,k)=>{const c=(D.pity&&D.pity[e])||0,due=D.owed&&D.owed[e]>0,prog=due?SEAS_PITY:c%SEAS_PITY,left=SEAS_PITY-prog,by=y0+148+k*54;
+else ev.forEach((e,k)=>{const c=(D.pity&&D.pity[e])||0,prog=c%SEAS_PITY,left=SEAS_PITY-prog,by=y0+148+k*54;
 txtL(SEAN[e][0]+' guarantee',L0+16,by+14,12,1,'#aab0c4');g.textAlign='right';txt(prog+' / '+SEAS_PITY+' opened',L0+gw-16,by+14,12,1,'#fff');g.textAlign='center';
 rr(L0+16,by+22,gw-32,10,5,'rgba(255,255,255,.12)');if(prog){const gr=g.createLinearGradient(L0+16,0,L0+gw-16,0);gr.addColorStop(0,'#f5c542');gr.addColorStop(1,'#cbd5e1');rr(L0+16,by+22,Math.max(10,(gw-32)*prog/SEAS_PITY),10,5,gr)}
-txt(due?'Guaranteed reward on your next crate!':left+(left>1?' more crates':' more crate')+' to a guaranteed seasonal item',W/2,by+47,11,0,'#8a90a6')})}}
+txt(left+(left>1?' more crates':' more crate')+' for a free seasonal reward',W/2,by+47,11,0,'#8a90a6')})}}
 cy+=h+15});
 sec('Codes');{const y0=Y(cy);if(!(y0>H||y0+130<vt)){rr(L0,y0,gw,130,16,'rgba(255,255,255,.07)');txt('Have a code?',W/2,y0+36,20,1);txt('Enter it to claim free rewards',W/2,y0+58,13,0,'#aab0c4');sbtn('Enter code',W/2,y0+96,200,42,'#3b82f6',openCodeBox,'#fff',16)}cy+=145}
 if(performance.now()<codeMsgUntil)txt(codeMsg,W/2,Y(cy)+6,15,1,'#7ee787');cy+=34;
@@ -234,17 +234,17 @@ const RTAG={coins:'Coins',car:'New car',trail:'New trail',boost:'New boost effec
 function crateSummary(){const G=geo(),n=crateRes.length,cols=n>5?2:1,rows=Math.ceil(n/cols),rw=(G.cw-20)/cols,rh=Math.min(58,(H-SAT-260)/rows);
 txt('You got',W/2,SAT+80,26,1);
 crateRes.forEach((r,k)=>{const x0=G.ox+10+(k%cols)*rw,y0=SAT+110+(k/cols|0)*(rh+6);
-rr(x0,y0,rw-6,rh,12,'rgba(255,255,255,.08)');rr(x0,y0,4,rh,2,RAR[rarityOf(r)][1]);resIcon(r,x0+32,y0+rh/2,rh*.85);txtL(resName(r),x0+62,y0+rh/2-2,r.k==='coins'?18:14,1,r.k==='coins'?'#f5c542':'#fff');txtL(RTAG[r.k],x0+62,y0+rh/2+16,11,0,'#8a90a6')});
+rr(x0,y0,rw-6,rh,12,'rgba(255,255,255,.08)');rr(x0,y0,4,rh,2,RAR[rarityOf(r)][1]);resIcon(r,x0+32,y0+rh/2,rh*.85);txtL(resName(r),x0+62,y0+rh/2-2,r.k==='coins'?18:14,1,r.k==='coins'?'#f5c542':'#fff');txtL((r.bonus?'Free reward · ':'')+RTAG[r.k],x0+62,y0+rh/2+16,11,0,r.bonus?'#f5c542':'#8a90a6')});
 btn('Done',W/2,SAT+110+rows*(rh+6)+34,220,48,'#3b82f6',()=>{scr='shop'},'#fff')}
 function openScr(){const now=performance.now(),t=(now-crateT)/1000,n=crateRes.length;g.fillStyle='rgba(8,9,14,.97)';g.fillRect(0,0,W,H);
 if(crateIdx>=n)return crateSummary();
-const r=crateRes[crateIdx],rar=RAR[rarityOf(r)],T1=2.8,cx=W/2,cy=H*.4,C=rarityOf(r)===5?['#f5c542','#cbd5e1']:[rar[1]];
-txt('Crate '+(crateIdx+1)+' of '+n,W/2,SAT+70,20,1,'#aab0c4');
-if(n>1){for(let k=0;k<n;k++){g.fillStyle=k<crateIdx?'#7ee787':k===crateIdx?'#fff':'rgba(255,255,255,.2)';circ(W/2+(k-(n-1)/2)*16,SAT+90,4)}btn('Skip all',W-62,SAT+62,96,36,'#2b2f3d',()=>{crateIdx=n},'#fff',13)}
+const r=crateRes[crateIdx],rar=RAR[rarityOf(r)],T1=r.bonus?1.1:2.8,cx=W/2,cy=H*.4,C=rarityOf(r)===5?['#f5c542','#cbd5e1']:[rar[1]];
+{const nc=crateRes.filter(x=>!x.bonus).length,ic=crateRes.slice(0,crateIdx+1).filter(x=>!x.bonus).length;if(r.bonus)txt('Free seasonal reward!',W/2,SAT+70,22,1,'#f5c542');else txt('Crate '+ic+' of '+nc,W/2,SAT+70,20,1,'#aab0c4')}
+if(n>1){for(let k=0;k<n;k++){g.fillStyle=crateRes[k].bonus?(k<=crateIdx?'#f5c542':'rgba(245,197,66,.35)'):k<crateIdx?'#7ee787':k===crateIdx?'#fff':'rgba(255,255,255,.2)';circ(W/2+(k-(n-1)/2)*16,SAT+90,4)}btn('Skip all',W-62,SAT+62,96,36,'#2b2f3d',()=>{crateIdx=n},'#fff',13)}
 if(t<T1){const p=t/T1,amp=2+p*p*18,sw=Math.sin(t*(30+p*30));
 C.forEach((c,k)=>glow(cx+(C.length>1?(k?-34:34)*p:0),cy,70+p*190,c,.08+(C.length>1?.38:.5)*p*p));
 g.save();g.translate(cx+sw*amp,cy+Math.abs(Math.sin(t*9))*p*-10);g.rotate(sw*.05*(.3+p));const sc=1+.05*Math.sin(t*12)+p*.1;g.scale(sc,sc);crateIcon(0,0,120,crateCol);g.restore();
-txt('Opening'+'.'.repeat(1+Math.floor(t*2.5)%3),W/2,cy+130,20,1);
+txt(r.bonus?SEAS_PITY+' seasonal crates opened!':'Opening'+'.'.repeat(1+Math.floor(t*2.5)%3),W/2,cy+130,20,1,r.bonus?'#f5c542':'#fff');
 const iv=.3-.22*p;if(now-lastTick>iv*1000){lastTick=now;tone(220+p*620,0,.06,'square',.05)}
 if(t>T1-.45){g.fillStyle='rgba(255,255,255,'+(.3*((t-(T1-.45))/.45))+')';g.fillRect(0,0,W,H)}
 return}
@@ -256,7 +256,7 @@ if(u<1.2)for(let k=0;k<28;k++){const a=k*2.399,sp=110+(k*37%190),d=sp*u*(1-.25*u
 g.save();g.translate(cx,cy);g.scale(e,e);resIcon(r,0,0,200);g.restore();
 const fa=Math.max(0,1-u/.35);if(fa>0){g.fillStyle='rgba(255,255,255,'+fa+')';g.fillRect(0,0,W,H)}
 const ta=Math.min(1,Math.max(0,(u-.25)/.4));g.globalAlpha=ta;
-txt(resName(r),W/2,cy+150,r.k==='coins'?34:26,1,r.k==='coins'?'#f5c542':'#fff');txt(rar[0],W/2,cy+178,14,1,rar[1]);txt(RTAG[r.k]+(r.pity?' · Guaranteed pick':''),W/2,cy+198,13,0,'#8a90a6');g.globalAlpha=1;
+txt(resName(r),W/2,cy+150,r.k==='coins'?34:26,1,r.k==='coins'?'#f5c542':'#fff');txt(rar[0],W/2,cy+178,14,1,rar[1]);txt((r.bonus?'Free reward · ':'')+RTAG[r.k],W/2,cy+198,13,0,'#8a90a6');g.globalAlpha=1;
 if(u>.9)btn(crateIdx<n-1?'Next':(n>1?'See all rewards':'Done'),W/2,cy+260,220,50,'#3b82f6',()=>{if(crateIdx<n-1){crateIdx++;crateT=performance.now()}else if(n>1){crateIdx=n}else{scr='shop'}},'#fff')}
 const F=(p,b)=>(b?'bold ':'')+p+'px -apple-system,system-ui,sans-serif';
 let W,H,RW,RX,LW,CW,CH,carY,SAT=0;
@@ -465,7 +465,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v36',W/2,H*.93,12,0,'#555a6e');
+txt('v37',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
