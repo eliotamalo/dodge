@@ -55,17 +55,29 @@ let scr='menu',confirmReset=false,ap=0,nextMs=100,curBg='',tp=[],ta=0,coinN=0,dc
 const claimable=()=>A.filter(a=>!D.claimed.includes(a[0])&&a[5]()>=a[3]).length;
 function txtL(t,x,y,px,b,c){g.textAlign='left';txt(t,x,y,px,b,c);g.textAlign='center'}
 function back(){btn('←',34,SAT+62,46,42,'#2b2f3d',()=>{scr='menu';confirmReset=false;stopMusic()},'#fff')}
-function resetAll(){const snd=D.sound,mu=D.music,mt=D.mtrack;D={best:0,coins:0,skin:0,owned:[0],day:today(),list:[],claimed:[],st:{runs:0,coins:0,near:0},sound:snd,music:mu,mtrack:mt,mig:3,trails:[0],trail:0,bes:[0],be:0,sfs:[0],sf:0,codes:[],pity:{},owed:{}};try{localStorage.removeItem('dodgeBest')}catch(e){}save();view=0;confirmReset=false;scr='menu'}
+let rsType='',rsMsg='',rsMsgUntil=0;
+const RS_INFO={coins:['Set your coins back to 0.','Everything else stays as it is.'],cosmetics:['Remove every car, trail, boost effect','and star form you own. Coins are kept.'],full:['Erase everything: coins, cosmetics,','achievements, codes and crate progress.','Your all time high score is kept.']};
+function doReset(type){
+if(type==='coins'){D.coins=0;rsMsg='Coins reset to 0'}
+else if(type==='cosmetics'){D.skin=0;D.owned=[0];D.trails=[0];D.trail=0;D.bes=[0];D.be=0;D.sfs=[0];D.sf=0;rsMsg='All cosmetics reset'}
+else{D={best:D.best,coins:0,skin:0,owned:[0],day:today(),list:[],claimed:[],st:{runs:0,coins:0,near:0},sound:D.sound,music:D.music,mtrack:D.mtrack,mig:3,trails:[0],trail:0,bes:[0],be:0,sfs:[0],sf:0,codes:[],pity:{},owed:{}};rsMsg='Full reset done'}
+rsMsgUntil=performance.now()+3000;save();view=0;confirmReset=false}
 function settings(){g.fillStyle='rgba(10,12,18,.92)';g.fillRect(0,0,W,H);back();txt('Settings',W/2,H*.17,34,1);
-btn('Sound: '+(D.sound===false?'OFF 🔇':'ON 🔊'),W/2,H*.27,240,50,'#2b2f3d',()=>{D.sound=D.sound===false;save();if(D.sound===false)stopMusic();else sfx('click')},'#fff');
-btn('Music: '+(D.music===false?'OFF':'ON 🎵'),W/2,H*.35,240,50,'#2b2f3d',()=>{D.music=D.music===false;save();if(D.music===false)stopMusic();else startMusic()},'#fff');
+rr(W/2-120,H*.2,240,H*.075,14,'rgba(255,255,255,.07)');txt('ALL TIME HIGH SCORE',W/2,H*.2+17,11,1,'#8a90a6');txt('🏆 '+D.best.toLocaleString()+' m',W/2,H*.2+H*.075-12,22,1,'#f5c542');
+btn('Sound: '+(D.sound===false?'OFF 🔇':'ON 🔊'),W/2,H*.34,240,50,'#2b2f3d',()=>{D.sound=D.sound===false;save();if(D.sound===false)stopMusic();else sfx('click')},'#fff');
+btn('Music: '+(D.music===false?'OFF':'ON 🎵'),W/2,H*.41,240,50,'#2b2f3d',()=>{D.music=D.music===false;save();if(D.music===false)stopMusic();else startMusic()},'#fff');
 const op=[...availT(),-1],ix=Math.max(0,op.indexOf(D.mtrack));
-btn('◀',W/2-130,H*.43,46,42,'#2b2f3d',()=>{D.mtrack=op[(ix+op.length-1)%op.length];save();startMusic()},'#fff');
-btn('▶',W/2+130,H*.43,46,42,'#2b2f3d',()=>{D.mtrack=op[(ix+1)%op.length];save();startMusic()},'#fff');
-txt(D.mtrack>=0&&op.includes(D.mtrack)?MT[D.mtrack].n:'Shuffle',W/2,H*.43+6,17,1);
-if(!confirmReset)btn('Reset all progress',W/2,H*.55,240,50,'#7a2326',()=>{confirmReset=true},'#fff');
-else{txt('Erase ALL coins, skins,',W/2,H*.52,16,0,'#ff8b8b');txt('scores and achievements?',W/2,H*.545,16,0,'#ff8b8b');
-btn('Yes, erase everything',W/2,H*.62,240,50,'#d92d32',resetAll,'#fff');btn('Cancel',W/2,H*.70,240,46,'#2b2f3d',()=>{confirmReset=false},'#fff')}}
+btn('◀',W/2-130,H*.49,46,42,'#2b2f3d',()=>{D.mtrack=op[(ix+op.length-1)%op.length];save();startMusic()},'#fff');
+btn('▶',W/2+130,H*.49,46,42,'#2b2f3d',()=>{D.mtrack=op[(ix+1)%op.length];save();startMusic()},'#fff');
+txt(D.mtrack>=0&&op.includes(D.mtrack)?MT[D.mtrack].n:'Shuffle',W/2,H*.49+6,17,1);
+if(!confirmReset){btn('Reset…',W/2,H*.6,240,50,'#7a2326',()=>{confirmReset=1},'#fff');if(performance.now()<rsMsgUntil)txt(rsMsg,W/2,H*.6+50,15,1,'#7ee787')}
+else if(confirmReset===1){txt('What do you want to reset?',W/2,H*.545,16,1,'#ff8b8b');
+btn('Reset only coins',W/2,H*.60,240,46,'#7a2326',()=>{rsType='coins';confirmReset=2},'#fff');
+btn('Reset all cosmetics',W/2,H*.67,240,46,'#7a2326',()=>{rsType='cosmetics';confirmReset=2},'#fff');
+btn('Full reset',W/2,H*.74,240,46,'#d92d32',()=>{rsType='full';confirmReset=2},'#fff');
+btn('Back',W/2,H*.81,140,38,'#2b2f3d',()=>{confirmReset=false},'#fff',15)}
+else{RS_INFO[rsType].forEach((l,k)=>txt(l,W/2,H*.53+k*24,15,k===2?1:0,k===2?'#f5c542':'#ff8b8b'));
+btn('Yes, reset',W/2,H*.68,240,50,'#d92d32',()=>doReset(rsType),'#fff');btn('Cancel',W/2,H*.76,240,46,'#2b2f3d',()=>{confirmReset=1},'#fff')}}
 function achv(){g.fillStyle='rgba(10,12,18,.92)';g.fillRect(0,0,W,H);back();txt('Achievements',W/2,H*.17,30,1);
 const pw=Math.min(W-24,440),px=(W-pw)/2,rh=H*.115,per=5,pages=Math.ceil(A.length/per);
 for(let i=0;i<per;i++){const a=A[ap*per+i];if(!a)break;const y=H*.21+i*rh,v=a[5](),done=v>=a[3],cd=D.claimed.includes(a[0]),cy=y+(rh-8)/2;
@@ -465,7 +477,7 @@ btn('🚗 Locker',W/2-82,H*.5,152,44,'#3b82f6',openLocker,'#fff');btn('🛒 Shop
 const ev=['tg','xm','ny'].filter(k=>SEA[k]).map(k=>SEAN[k][0]).join(' + ');if(ev)txt('🎉 '+ev+' event!',W/2,H*.545,14,1,'#f5c542');
 txt("Today's best",W/2,H*.58,18,1,'#f5c542');
 for(let i=0;i<5;i++)txt((i+1)+'.  '+(D.list[i]!=null?D.list[i]+' m':'—'),W/2,H*.615+i*H*.035,17,0,D.list[i]!=null?'#fff':'#6b7084');
-txt('v37',W/2,H*.93,12,0,'#555a6e');
+txt('v38',W/2,H*.93,12,0,'#555a6e');
 btn(over?'Retry':'Start',W/2,H*.83,220,54,'#e5484d',startGame,'#fff');
 btn('⚙️',34,SAT+62,46,42,'#2b2f3d',()=>{scr='settings';confirmReset=false},'#fff');
 btn('🏆',W-34,SAT+62,46,42,'#2b2f3d',()=>{scr='ach';ap=0},'#fff');
